@@ -1,9 +1,18 @@
-workingpath <- "C:\\Users\\pc\\Desktop\\Jihan"
-setwd(workingpath)
+---
+title: ""
+output: html_document
+---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r reading data}
 pml.training <- read.csv("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv", header=TRUE)
 pml.testing <- read.csv("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv", header=TRUE)
+```
 
+```{r preprocessing}
 library(caret);  library(ggplot2);  library(rattle)
 
 training <- pml.training[, c(8:160)]
@@ -18,7 +27,9 @@ training[is.na(training)] <- 0
 inTrain <- createDataPartition(training$classe, p=0.7, list=FALSE)
 training.in <- training[inTrain,];  testing.in <- training[-inTrain,]
 dim(training.in);  dim(testing.in)
+```
 
+```{r modeling - tree}
 modFit.rpart <- train(classe ~ ., method="rpart", data=training.in)
 print(modFit.rpart)
 fancyRpartPlot(modFit.rpart$finalModel)
@@ -28,37 +39,10 @@ confusionMatrix(pr.train.rpart, training.in$classe)
 
 pr.test.rpart <- predict(modFit.rpart, newdata=testing.in)
 confusionMatrix(pr.test.rpart, testing.in$classe)
+```
 
 
-modFit.rf <- train(classe ~ ., method="rf", data=training.in, prox=TRUE)
-print(modFit.rf)
-# Error ·Î ¼öÇà ºÒ°¡
-#getTree(modFit.rf$finalModel, k=5)
-#
-#pr.train.rf <- predict(modFit.rf, newdata=training.in)
-#confusionMatrix(training.in$classe, pr.train.rf)
-
-#pr.test.rf <- predict(modFit.rf, newdata=testing.in)
-#confusionMatrix(testing.in$classe, pr.test.rf)
-
-modFit.lda <- train(classe ~ ., method="lda", data=training.in)
-# Error ·Î ºÒ°¡
-# print(modFit.lda)
-#pr.train.lda <- predict(modFit.lda, newdata=training.in)
-#confusionMatrix(training.in$classe, pr.train.lda)
-#pr.test.lda <- predict(modFit.lda, newdata=testing.in)
-#confusionMatrix(testing.in$classe, pr.test.lda)
-
-modFit.nb <- train(classe ~ ., method="nb", data=training.in)
-print(modFit.nb)
-
-pr.train.nb <- predict(modFit.nb, newdata=training.in)
-confusionMatrix(training.in$classe, pr.train.nb)
-
-pr.test.nb <- predict(modFit.nb, newdata=testing.in)
-confusionMatrix(testing.in$classe, pr.test.nb)
-
-
+```{r prediction}
 testing <- pml.testing[, c(8:160)]
 factor.id <- which(sapply(testing, is.factor));  factor.n <- length(factor.id)
 
@@ -69,14 +53,10 @@ for(i in factor.id[-factor.n]){
 
 testing[is.na(testing)] <- 0
 predict(modFit.rpart, newdata=testing)
-
-#  [1] C A A A A C C A A A C C C A C A A A A C
-# -> 2, 4, 5, 9, 10, 12, 14, 17
-
-preObj <- preProcess(tr.red[, -factor.n], method="knnImpute")
-res <- predict(preObj, tr.red[, -factor.n])
+```
 
 
+```{r modeling - unsupervised kmeans}
 kMeans1 <- kmeans(subset(training.in, select=-c(classe)), centers=5)
 
 res.kmeans <- kMeans1$cluster
@@ -96,12 +76,38 @@ pr.test.kmeans <- predict(modFit.kmeans, newdata=testing.in)
 confusionMatrix(pr.test.kmeans, testing.in$classe)
 
 predict(modFit.kmeans, newdata=testing)
+```
 
 
 
+modFit.rf <- train(classe ~ ., method="rf", data=training.in, prox=TRUE)
+print(modFit.rf)
+# Error ë¡œ ìˆ˜í–‰ ë¶ˆê°€
+#getTree(modFit.rf$finalModel, k=5)
+#
+#pr.train.rf <- predict(modFit.rf, newdata=training.in)
+#confusionMatrix(training.in$classe, pr.train.rf)
 
+#pr.test.rf <- predict(modFit.rf, newdata=testing.in)
+#confusionMatrix(testing.in$classe, pr.test.rf)
 
-# names(pml.training)[c(1:7,160)]
-# c(1:7, 160)
-#[1] "X"                    "user_name"            "raw_timestamp_part_1" "raw_timestamp_part_2"
-#[5] "cvtd_timestamp"       "new_window"           "num_window"           "classe" 
+modFit.lda <- train(classe ~ ., method="lda", data=training.in)
+# Error ë¡œ ë¶ˆê°€
+# print(modFit.lda)
+#pr.train.lda <- predict(modFit.lda, newdata=training.in)
+#confusionMatrix(training.in$classe, pr.train.lda)
+#pr.test.lda <- predict(modFit.lda, newdata=testing.in)
+#confusionMatrix(testing.in$classe, pr.test.lda)
+
+modFit.nb <- train(classe ~ ., method="nb", data=training.in)
+print(modFit.nb)
+
+pr.train.nb <- predict(modFit.nb, newdata=training.in)
+confusionMatrix(training.in$classe, pr.train.nb)
+
+pr.test.nb <- predict(modFit.nb, newdata=testing.in)
+confusionMatrix(testing.in$classe, pr.test.nb)
+
+preObj <- preProcess(tr.red[, -factor.n], method="knnImpute")
+res <- predict(preObj, tr.red[, -factor.n])
+
