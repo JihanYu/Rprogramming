@@ -1,0 +1,38 @@
+data slicing
+training option 
+- continuous : RMSE, R2
+- categorical : accuracy, kappa
+Preprocessing
+- standardizing
+- imputing data
+Covariate
+- add dummy variables
+- removing zero covariates
+Preprocessing with PCA
+- preProcess (method="pca")
+Predicting with regression
+Predicting with regression, multiple covariates
+
+Tree
+- train(method="rpart")
+
+Bagging
+- resample cases and recalculate predictions
+
+Random forests
+- train(metohd="rf")
+
+Boosting
+- gbm : boosting with trees
+- mboost : model based boosting
+- ada : statistical boosting based on additive logistic regression
+- gamBoost : boosting generalized additive models
+
+Model selection
+- train(method="lda")
+- train(method="nb")
+
+Regularized regression
+- ridge / lasso / relaxo
+
+Unsupervised predictions
