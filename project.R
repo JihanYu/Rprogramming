@@ -1,38 +1,56 @@
-workingpath <- "C:\\Users\\pc\\Desktop\\Jihan"
+workingpath <- "C:\\Users\\MED1\\Desktop\\Coursera\\project" # office
+# workingpath <- "C:\\Users\\pc\\Desktop\\Jihan"  # home
 setwd(workingpath)
 
+##### Load data & pre-processing #####
 pml.training <- read.csv("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv", header=TRUE)
 pml.testing <- read.csv("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv", header=TRUE)
 
 library(caret);  library(ggplot2);  library(rattle)
+training <- pml.training[, c(8:160)]    # Fitbit data only
 
-training <- pml.training[, c(8:160)]
+# convert variable type : factor to numeric 
 factor.id <- which(sapply(training, is.factor));  factor.n <- length(factor.id)
-
 for(i in factor.id[-factor.n]){
   training[, i] <- as.character(training[, i])
   training[, i] <- as.numeric(training[, i])
 }
-training[is.na(training)] <- 0
 
+##### Imputation #####
+# apply all NA values to zero (0)
+# training[is.na(training)] <- 0
+
+# select variables which have NA less than half
+n.na <- function(vec){
+	return ( sum(is.na(vec), na.rm=TRUE) )
+}
+n.row <- nrow(training)
+na.id <- which( sapply(training, n.na) > n.row/2 )
+training <- training[, -na.id]
+dim(training)
+
+
+##### Spliting the training data to training subset and testing subset #####
 inTrain <- createDataPartition(training$classe, p=0.7, list=FALSE)
 training.in <- training[inTrain,];  testing.in <- training[-inTrain,]
 dim(training.in);  dim(testing.in)
 
+##### Tree model #####
 modFit.rpart <- train(classe ~ ., method="rpart", data=training.in)
 print(modFit.rpart)
 fancyRpartPlot(modFit.rpart$finalModel)
 
-pr.train.rpart <- predict(modFit.rpart, newdata=training.in)
+pr.train.rpart <- predict(modFit.rpart, newdata=training.in)   # Training subset
 confusionMatrix(pr.train.rpart, training.in$classe)
 
-pr.test.rpart <- predict(modFit.rpart, newdata=testing.in)
+pr.test.rpart <- predict(modFit.rpart, newdata=testing.in)     # Testing subset
 confusionMatrix(pr.test.rpart, testing.in$classe)
 
 
+##### Random forest #####
 modFit.rf <- train(classe ~ ., method="rf", data=training.in, prox=TRUE)
-print(modFit.rf)
 # Error 로 수행 불가
+# print(modFit.rf)
 #getTree(modFit.rf$finalModel, k=5)
 #
 #pr.train.rf <- predict(modFit.rf, newdata=training.in)
@@ -41,6 +59,7 @@ print(modFit.rf)
 #pr.test.rf <- predict(modFit.rf, newdata=testing.in)
 #confusionMatrix(testing.in$classe, pr.test.rf)
 
+##### lda method #####
 modFit.lda <- train(classe ~ ., method="lda", data=training.in)
 # Error 로 불가
 # print(modFit.lda)
@@ -49,16 +68,16 @@ modFit.lda <- train(classe ~ ., method="lda", data=training.in)
 #pr.test.lda <- predict(modFit.lda, newdata=testing.in)
 #confusionMatrix(testing.in$classe, pr.test.lda)
 
+##### nb method #####
 modFit.nb <- train(classe ~ ., method="nb", data=training.in)
-print(modFit.nb)
+# Error 로 불가
+#print(modFit.nb)
+#pr.train.nb <- predict(modFit.nb, newdata=training.in)
+#confusionMatrix(training.in$classe, pr.train.nb)
+#pr.test.nb <- predict(modFit.nb, newdata=testing.in)
+#confusionMatrix(testing.in$classe, pr.test.nb)
 
-pr.train.nb <- predict(modFit.nb, newdata=training.in)
-confusionMatrix(training.in$classe, pr.train.nb)
-
-pr.test.nb <- predict(modFit.nb, newdata=testing.in)
-confusionMatrix(testing.in$classe, pr.test.nb)
-
-
+##### Apply the tree model to pml.testing data #####
 testing <- pml.testing[, c(8:160)]
 factor.id <- which(sapply(testing, is.factor));  factor.n <- length(factor.id)
 
@@ -70,13 +89,9 @@ for(i in factor.id[-factor.n]){
 testing[is.na(testing)] <- 0
 predict(modFit.rpart, newdata=testing)
 
-#  [1] C A A A A C C A A A C C C A C A A A A C
-# -> 2, 4, 5, 9, 10, 12, 14, 17
-
-preObj <- preProcess(tr.red[, -factor.n], method="knnImpute")
-res <- predict(preObj, tr.red[, -factor.n])
 
 
+##### Unsupervised learning #####
 kMeans1 <- kmeans(subset(training.in, select=-c(classe)), centers=5)
 
 res.kmeans <- kMeans1$cluster
@@ -98,8 +113,23 @@ confusionMatrix(pr.test.kmeans, testing.in$classe)
 predict(modFit.kmeans, newdata=testing)
 
 
+##### preProcessing with PCA #####
+preProc <- preProcess( subset(training.in, select=-c(classe)), method="pca", center=5 )
+#zero variance : 
+#kurtosis_yaw_belt, 1
+#skewness_yaw_belt,  1
+#amplitude_yaw_belt, 
+#kurtosis_yaw_dumbbell,  1
+#skewness_yaw_dumbbell,  1
+#amplitude_yaw_dumbbell, 
+#kurtosis_yaw_forearm,  1
+#skewness_yaw_forearm,  1
+#amplitude_yaw_forearm
 
 
+##### imputation - knnImpute #####
+preObj <- preProcess(tr.red[, -factor.n], method="knnImpute")
+res <- predict(preObj, tr.red[, -factor.n])
 
 # names(pml.training)[c(1:7,160)]
 # c(1:7, 160)
