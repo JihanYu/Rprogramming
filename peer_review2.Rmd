@@ -1,0 +1,221 @@
+---
+
+title: "Practical Machine Learning Course Project"
+
+output: html_document
+
+---
+
+
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+
+
+## Background
+
+
+
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://web.archive.org/web/20161224072740/http:/groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset).
+
+
+
+## Data
+
+
+
+The training data for this project are available here:
+
+
+
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv
+
+
+
+The test data are available here:
+
+
+
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
+
+
+
+## Loading the dataset
+
+
+
+```{r cache=TRUE}
+
+setwd("~/R/Practical Machine Learning/Course Project")
+
+training <- read.csv("pml-training.csv", header=TRUE)
+
+testing <- read.csv("pml-testing.csv", header=TRUE)
+
+```
+
+
+
+```{r}
+
+library(caret); library(ggplot2)
+
+```
+
+
+
+## Exploratory Data Analysis
+
+
+
+```{r}
+
+dim(training)
+
+dim(testing)
+
+g <- ggplot(data=training, aes(x = classe))
+
+g + geom_bar()
+
+```
+
+
+
+## Data Cleaning
+
+
+
+First, we remove the variables with near zero variance from the dataset.
+
+
+
+``` {r}
+
+nzv <- nearZeroVar(training)
+
+training_nzv <- training[, -nzv]
+
+testing_nzv <- testing[, -nzv]
+
+```
+
+
+
+We then remove the variables that more than 95% of the oberservations are missing.
+
+
+
+```{r}
+
+all_na <- sapply(training_nzv, function(x) mean(is.na(x))) > 0.95
+
+train <- training_nzv[, all_na == FALSE]
+
+test <- testing_nzv[, all_na == FALSE]
+
+```
+
+
+
+We then remove the first 7 variables which are identification variables.
+
+
+
+```{r}
+
+train <- train[, -c(1:7)]
+
+test <- test[, -c(1:7)]
+
+```
+
+
+
+## Data Partioning
+
+
+
+We would then create a training and testing dataset from the original "training" data provided.
+
+
+
+```{r}
+
+set.seed(1234)
+
+inTrain <- createDataPartition(train$classe, p=0.6, list=FALSE)
+
+trainset <- train[inTrain,]
+
+testset <- train[-inTrain,]
+
+```
+
+
+
+# Constructing Model for Prediction
+
+## Decision Tree Model
+
+```{r cache=TRUE}
+
+library(rpart.plot)
+
+modfit <- train(classe ~., data=trainset, method="rpart")
+
+DT_prediction <- predict(modfit, testset)
+
+confusionMatrix(DT_prediction, testset$classe)
+
+rpart.plot(modfit$finalModel, roundint=FALSE)
+
+```
+
+
+
+The prediction accuracy from the decision tree model is 49%
+
+
+
+## Random Forest Model
+
+```{r cache=TRUE}
+
+RF_modfit <- train(classe ~ ., data = trainset, method = "rf", ntree = 10)
+
+RF_prediction <- predict(RF_modfit, testset)
+
+RF_pred_conf <- confusionMatrix(RF_prediction, testset$classe)
+
+RF_pred_conf
+
+```
+
+
+
+The prediction accuracy from the random forest model is 99%
+
+
+
+Therefore, we can conclude that Random Forest Model results in a more accurate prediction.
+
+
+
+## Prediciton using the Random Forest Model
+
+
+
+We then predict the classe variable using the original testing dataset provided.
+
+
+
+```{r}
+
+predict(RF_modfit, test)
+
+```
