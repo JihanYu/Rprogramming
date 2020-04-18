@@ -3,46 +3,67 @@ title: ""
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+## 1. Title : 
+
+## 2. Synopsis
+
+## 3. Data analysis
+```{r setup, echo=FALSE, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE, fig.align = "center", message=FALSE, warning=FALSE, 
+                      fig.height=3, fig.width=3, cache=TRUE, dpi = 300)
 ```
 
-```{r reading data}
+### Loading & preprocessing data
+```{r loading & preprocessing data}
 pml.training <- read.csv("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv", header=TRUE)
 pml.testing <- read.csv("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv", header=TRUE)
-```
 
-```{r preprocessing}
 library(caret);  library(ggplot2);  library(rattle)
+training <- pml.training[, c(8:160)]    # Fitbit data only
 
-training <- pml.training[, c(8:160)]
+# convert variable type : factor to numeric 
 factor.id <- which(sapply(training, is.factor));  factor.n <- length(factor.id)
-
 for(i in factor.id[-factor.n]){
   training[, i] <- as.character(training[, i])
   training[, i] <- as.numeric(training[, i])
 }
-training[is.na(training)] <- 0
 
+##### Imputation #####
+# apply all NA values to zero (0)
+# training[is.na(training)] <- 0
+
+# select variables which have NA less than half
+n.na <- function(vec){
+	return ( sum(is.na(vec), na.rm=TRUE) )
+}
+n.row <- nrow(training)
+na.id <- which( sapply(training, n.na) > n.row/2 )
+training <- training[, -na.id]
+dim(training)
+
+##### Spliting the training data to training subset and testing subset #####
 inTrain <- createDataPartition(training$classe, p=0.7, list=FALSE)
 training.in <- training[inTrain,];  testing.in <- training[-inTrain,]
 dim(training.in);  dim(testing.in)
 ```
 
-```{r modeling - tree}
+### Tree model 
+```{r Training - tree model}
+##### Tree model #####
 modFit.rpart <- train(classe ~ ., method="rpart", data=training.in)
 print(modFit.rpart)
 fancyRpartPlot(modFit.rpart$finalModel)
 
-pr.train.rpart <- predict(modFit.rpart, newdata=training.in)
+pr.train.rpart <- predict(modFit.rpart, newdata=training.in)   # Training subset
 confusionMatrix(pr.train.rpart, training.in$classe)
 
-pr.test.rpart <- predict(modFit.rpart, newdata=testing.in)
+pr.test.rpart <- predict(modFit.rpart, newdata=testing.in)     # Testing subset
 confusionMatrix(pr.test.rpart, testing.in$classe)
 ```
 
-
-```{r prediction}
+### Prediction the classe of the pml.testing data
+```{r predicting the pml.testing data}
+##### Apply the tree model to pml.testing data #####
 testing <- pml.testing[, c(8:160)]
 factor.id <- which(sapply(testing, is.factor));  factor.n <- length(factor.id)
 
@@ -55,7 +76,7 @@ testing[is.na(testing)] <- 0
 predict(modFit.rpart, newdata=testing)
 ```
 
-
+### Unsupervised model - kmeans
 ```{r modeling - unsupervised kmeans}
 kMeans1 <- kmeans(subset(training.in, select=-c(classe)), centers=5)
 
@@ -77,37 +98,3 @@ confusionMatrix(pr.test.kmeans, testing.in$classe)
 
 predict(modFit.kmeans, newdata=testing)
 ```
-
-
-
-modFit.rf <- train(classe ~ ., method="rf", data=training.in, prox=TRUE)
-print(modFit.rf)
-# Error 로 수행 불가
-#getTree(modFit.rf$finalModel, k=5)
-#
-#pr.train.rf <- predict(modFit.rf, newdata=training.in)
-#confusionMatrix(training.in$classe, pr.train.rf)
-
-#pr.test.rf <- predict(modFit.rf, newdata=testing.in)
-#confusionMatrix(testing.in$classe, pr.test.rf)
-
-modFit.lda <- train(classe ~ ., method="lda", data=training.in)
-# Error 로 불가
-# print(modFit.lda)
-#pr.train.lda <- predict(modFit.lda, newdata=training.in)
-#confusionMatrix(training.in$classe, pr.train.lda)
-#pr.test.lda <- predict(modFit.lda, newdata=testing.in)
-#confusionMatrix(testing.in$classe, pr.test.lda)
-
-modFit.nb <- train(classe ~ ., method="nb", data=training.in)
-print(modFit.nb)
-
-pr.train.nb <- predict(modFit.nb, newdata=training.in)
-confusionMatrix(training.in$classe, pr.train.nb)
-
-pr.test.nb <- predict(modFit.nb, newdata=testing.in)
-confusionMatrix(testing.in$classe, pr.test.nb)
-
-preObj <- preProcess(tr.red[, -factor.n], method="knnImpute")
-res <- predict(preObj, tr.red[, -factor.n])
-

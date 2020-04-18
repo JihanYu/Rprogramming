@@ -1,0 +1,113 @@
+---
+title: ""
+output: pdf_document
+---
+
+## 1. Title : MPG differences between transmissions in the car
+### Manual transmission is better than automatic, but not statistically significant.
+
+## 2. Synopsis
+  In the data from the 1974 Motor Trend US magazine, several aspects of the car were described. Among those, MPG, miles per gallon meant the efficacy of the oil consumption of that car and it could be influenced by various factors related to car.
+  When the data was analyzed, MPG was meaningfully influenced by number of cylinders, transmission types, horsepower of the engine and weight of the car(1000 lbs). And MPG of the car with manual transmission was higher than the one with automatic. But the differences were not statistically significant when the level of significance was assumed 5% (alpha = 0.05). 
+
+## 3. Data analysis
+```{r setup, echo=FALSE, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE, fig.align = "center", message=FALSE, warning=FALSE, 
+                      fig.height=3, fig.width=3, cache=TRUE, dpi = 300)
+```
+
+### Assign & change variable types to factor
+```{r pre-processing}
+library(MASS);  library(car)
+cont.var <- c("mpg", "disp", "hp", "drat", "wt", "qsec")
+fact.var <- c("cyl", "vs", "am", "gear", "carb")
+mtcars$cyl <- as.factor(mtcars$cyl)
+mtcars$vs <- as.factor(mtcars$vs)
+mtcars$am <- as.factor(mtcars$am)
+mtcars$gear <- as.factor(mtcars$gear)
+mtcars$carb <- as.factor(mtcars$carb)
+
+```
+
+### Basic summary
+```{r basic summary, fig.height=4, fig.width=4}
+summary(mtcars[cont.var])
+summary(mtcars[fact.var])
+plot(mtcars[cont.var]);  plot(mtcars[c("mpg", fact.var)]);
+boxplot(mtcars$mpg ~ mtcars$am, ylab="MPG", xlab="Transmission")
+
+mpg.am <- c(shapiro.test(mtcars$mpg)$p.value, var.test(mpg ~ am, data=mtcars)$p.value)
+names(mpg.am) <- c("shapiro", "var.test");  print(mpg.am)
+t.mpg.am <- t.test(mpg ~ am, data=mtcars, var.equal=TRUE)
+res.t.mpg.am <- c( t.mpg.am$p.value, t.mpg.am$conf.int)
+names(res.t.mpg.am) <- c("p-value", "lower conf.int", "upper conf.int");  print(res.t.mpg.am)
+```
+- Lattice plot shows that the mpg is negatively correlated with disp, hp and wt, and positively correlated with drat. However the data of disp, drat are somewhat dispersed. And the qsec has no definite correlation with mpg.
+- The mpg is negatively correlated with cyl, and positively correlated with vs and am. But the gear & carb show no definite correlation with mpg. 
+- The mean of the MPG is higher in the car with manual transmission. (automatic : 17.14 vs manual : 24.39)
+- The t-test revealed the difference between 2 groups are sitatistically significant(The p-value less than 0.05 and the confidence interval does not include 0.) when the only variable "am(tramsmission)" is considered.
+
+### Fitting regression models - stepwise approach
+```{r fitting models}
+fit <- lm(mpg ~ ., data=mtcars)  # model with all variables
+vif(fit)
+fit.am <- lm(mpg ~ am, data=mtcars)  # model with only am
+
+step.lm <- stepAIC(fit, direction="both", trace=FALSE)
+vif(step.lm)
+
+model.p <- c( anova(fit, fit.am)$Pr[2], anova(fit, step.lm)$Pr[2], 
+               anova(fit.am, step.lm)$Pr[2] )
+names(model.p) <- c("all-minimal", "all-stepwise", "minimal-stepwise");  print(model.p)
+
+# model with selected variables - am, cyl, hp, wt
+summary(step.lm)$coef
+confint(step.lm)
+summary(step.lm)$adj.r.squared
+```
+- For more exact analysis, other observations are considered.
+- All variables are included at model "fit". The variance inflation factor(VIF) of the model ranges from 1.86(carb) to 7.77(disp), so it can be concluded that the fit model may have multicollinearity. 
+- By using stepAIC function in the library MASS, the model is selected with stepwise selection of the variables.
+- The step.lm model shows that VIF values are all less than 3, so it can be concluded that the model does not have multicollinearity.
+- To compare the model one by one, there are significant differences between all variable model(fit) and am only model(fit.am)), and between stepwise-selected model(step.lm) and am only model(fit.am). (p-values are 0.0018 and 0.000000017, respectively). However, the difference between the model(fit) and the stepwise-selected model(step.lm) is not statisticaly significant.(p-value is 0.959).
+- Therefore, the all variable model(fit) can be substituted by stepwise-selected model(step.lm), but the step.lm model cannot be replaced by am only model(fit.am).
+- The coefficient of am variable is 1.81. It means that the MPG of the manual transmission(am=1) is 1.8 times efficient than automatic transmission(am=0). 
+- However, the p-value of the am variable is larger than 0.05(0.21) and the confidence interval contains zero(0). So the significant difference between transmission is not existed.
+Therefore, the efficacy between transmissions is not answerable. 
+
+### Residual plot 
+```{r residual plot}
+step.resid <- resid(step.lm)
+plot(mtcars$am, step.resid, ylab="residuals", xlab="Transmission")
+hist(step.resid, xlab="residuals", main="", prob=TRUE)
+lines(density(step.resid))
+shapiro.test(step.resid)$p.value
+```
+- The residuals of the selected model(step.lm) in each transmission groups do not have significant difference, and the distributions reveals similar pattern. 
+- And the distribution of the residual have normal distribution,(p-value of the shapiro test is larger than 0.05.) and its mean is nearly zero(0).
+- Therefore the residual pattern shows the model can explain two transmission groups unbiasly.
+
+```{r residual plot 2, fig.height=5, fig.width=5}
+par(mfrow=c(2,2));  plot(step.lm);  par(mfrow=c(1,1))
+```
+- Q-Q plot reveals the data are nearly on diagonal line. 
+- Most residuals and hatvalues are located on zero(0) line. 
+
+```{r residual plot 3}
+hat.step.lm <- hatvalues(step.lm)
+hist(hat.step.lm, xlab="hat values", main="")
+```
+
+### Uncertainty / inference
+```{r uncertainty}
+newdata <- data.frame(am=factor(c(0, 1)), hp=c(0), wt=c(0), cyl=factor(c(4)))
+predict(step.lm, newdata=newdata, interval="prediction")
+predict(fit.am, newdata=data.frame(am=factor(c(0, 1))), interval="prediction")
+```
+- To predict the result of the stepwise model, the mpg of automatic transmission is 33.71 and manual is 35.52. However, the 95% intervals of each model are largely overlapped. Therefore the superiority of the MPG between transmissions cannot be concluded.
+- In the minimal model(am only considered), the mpg of automatic is 17.15 and manual is 24.39, and the 95% intervals are mostly overlapped. Therefore, mpg of the manual car may not be higher than the automatic one.
+
+## 4. Summary
+- To conclude the MPG difference between transmission types, several regression models were compared. - all variables, minimal variables, stepwise selection.
+- By using stepwise approach, 4 variables, am, cyl, hp and wt, were selected, and the stepwise model was significantly different from all or minimal variables models.
+- The model showed the mpg of the manual transmission was higher than that of the automatic, but the difference was not statistically significant. Therefore the efficacy between transmissions was not answerable.

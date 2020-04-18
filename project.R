@@ -1,5 +1,5 @@
-workingpath <- "C:\\Users\\MED1\\Desktop\\Coursera\\project" # office
-# workingpath <- "C:\\Users\\pc\\Desktop\\Jihan"  # home
+#workingpath <- "C:\\Users\\MED1\\Desktop\\Coursera\\project" # office
+workingpath <- "C:\\Users\\pc\\Desktop\\Jihan"  # home
 setwd(workingpath)
 
 ##### Load data & pre-processing #####
