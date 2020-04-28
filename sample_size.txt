@@ -1,8 +1,39 @@
 https://www.surveysystem.com/sscalc.htm
+input 
+determine sample size
+- conf level : 95/99
+- conf interval
+- population 
+=> sample size needed
+find confidence interval
+- conf level 95/99
+- population
+- percentage
+=> confidence interval
 
 https://www.calculator.net/sample-size-calculator.html
+find out the sample size
+- confidence level
+- margin of error
+- population proportion
+- population size
+find out the margin of error
+- confidence level
+- sample size
+- population proportion
+- population size
 
 https://clincalc.com/stats/samplesize.aspx
+study group design
+- 2 independent study group / one study group vs population
+primary end point
+- dichotomous / continuous
+anticipated incidence
+- group 1 : x %
+- group 2 : x %
+- enrollment ratio
+type I/II error rate
+
 
 https://www.surveymonkey.com/mp/sample-size-calculator/
 
