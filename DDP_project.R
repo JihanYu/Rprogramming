@@ -36,14 +36,26 @@ ggplot(df.a, aes(x=x, y=y1)) +
 				aes(ymin=0, ymax=y1), fill="blue", alpha=0.5) 
 
 
-x <- seq(from=-5, to=5, by=0.01)
+a <- 0.05;  b <- 0.2
+effect.size <- 5
+mu0 <- 0;  std.drv0 <- 1
+mu1 <- mu0 + effect.size;  std.drv1 <- 1
+one.two <- TRUE
+
+two.sided <- 1;  if(one.two == TRUE) two.sided <- 2
+x.inter <- qnorm(a/two.sided, lower.tail=FALSE)
+
+x <- seq(from = mu0 - 5*std.drv0, to = mu1 + 5*std.drv1, by=0.01)
 h0 <- dnorm(x, mean=mu0, sd=std.drv0)
 h1 <- dnorm(x, mean=mu1, sd=std.drv1)
 h.norm <- data.frame(x, h0, h1)
 
-a <- 0.05;  b <- 0.2
-
-p <- ggplot() +
-	geom_line(df.a, aes(x=x, y=y1), color="blue") +
-	geom_line(df.a, aes(x=x, y=y2), color="red") +
-	geom_vline(xintercept=1)
+p <- ggplot(h.norm, aes(x=x, y=h0)) +
+	geom_line(aes(x=x, y=h0), color="red") +
+	geom_line(aes(x=x, y=h1), color="blue") +
+	geom_vline(xintercept=x.inter) +
+	geom_ribbon(data=subset(h.norm, x.inter <= x & x <= max(x)), 
+				aes(ymin=0, ymax=h0, fill="H0", alpha=0.5)) +
+	geom_ribbon(data=subset(h.norm, min(x) <= x & x <= x.inter),
+				aes(ymin=0, ymax=h1, fill="H1", alpha=0.5))
+print(p)
