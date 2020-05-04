@@ -41,6 +41,9 @@ effect.size <- 5
 mu0 <- 0;  std.drv0 <- 1
 mu1 <- mu0 + effect.size;  std.drv1 <- 1
 one.two <- TRUE
+sample.size <- NULL
+#std.err0 <- std.drv0 / sqrt(n0/2)
+#std.err1 <- std.drv1 / sqrt(n1/2)
 
 two.sided <- 1;  if(one.two == TRUE) two.sided <- 2
 x.inter <- qnorm(a/two.sided, lower.tail=FALSE)
