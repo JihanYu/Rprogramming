@@ -41,16 +41,17 @@ effect.size <- 5
 mu0 <- 0;  std.drv0 <- 1
 mu1 <- mu0 + effect.size;  std.drv1 <- 1
 one.two <- TRUE
-sample.size <- NULL
-#std.err0 <- std.drv0 / sqrt(n0/2)
-#std.err1 <- std.drv1 / sqrt(n1/2)
+n1 <- 100;  n1.n0 <- 1;  
+n0 <- n1/n1.n0
+std.err0 <- std.drv0 / sqrt(n0/2)
+std.err1 <- std.drv1 / sqrt(n1/2)
 
 two.sided <- 1;  if(one.two == TRUE) two.sided <- 2
 x.inter <- qnorm(a/two.sided, lower.tail=FALSE)
 
-x <- seq(from = mu0 - 5*std.drv0, to = mu1 + 5*std.drv1, by=0.01)
-h0 <- dnorm(x, mean=mu0, sd=std.drv0)
-h1 <- dnorm(x, mean=mu1, sd=std.drv1)
+x <- seq(from = mu0 - 5*std.err0, to = mu1 + 5*std.err1, by=0.01)
+h0 <- dnorm(x, mean=mu0, sd=std.err0)
+h1 <- dnorm(x, mean=mu1, sd=std.err1)
 h.norm <- data.frame(x, h0, h1)
 
 p <- ggplot(h.norm, aes(x=x, y=h0)) +
