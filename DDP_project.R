@@ -42,6 +42,11 @@ mu0 <- 0;  std.drv0 <- 1
 mu1 <- mu0 + effect.size;  std.drv1 <- 1
 one.two <- TRUE
 n1 <- 100;  n1.n0 <- 1;  
+
+if(is.na(n1)){
+  
+}
+
 n0 <- n1/n1.n0
 std.err0 <- std.drv0 / sqrt(n0/2)
 std.err1 <- std.drv1 / sqrt(n1/2)
@@ -63,3 +68,5 @@ p <- ggplot(h.norm, aes(x=x, y=h0)) +
 	geom_ribbon(data=subset(h.norm, min(x) <= x & x <= x.inter),
 				aes(ymin=0, ymax=h1, fill="H1", alpha=0.5))
 print(p)
+
+pnorm(qnorm(0.05), lower.tail=FALSE)
