@@ -76,7 +76,7 @@ p <- ggplot(h.norm, aes(x=x, y=h0)) +
 	geom_line(aes(x=x, y=h0), color="red") +
 	geom_line(aes(x=x, y=h1), color="blue") +
 	geom_vline(xintercept=a.h0) +
-	geom_vline(xintercept=b.h1) +
+	geom_vline(xintercept=b.h1, linetype="dashed") +
 	geom_ribbon(data=subset(h.norm, a.h0 <= x & x <= max(x)), 
 				aes(ymin=0, ymax=h0, fill="H0", alpha=0.5)) +
 	geom_ribbon(data=subset(h.norm, min(x) <= x & x <= a.h0),
