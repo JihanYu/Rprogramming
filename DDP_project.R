@@ -56,8 +56,10 @@ if(n1.n0 >= 1){
 	q12 <- 1 + n1.n0
 }
 
+est.sample.size <- ( (za + zb)^2 * std.drv0^2 * (q12) ) / (effect.size^2)
+
 if(is.na(n1)){
-	n1 <- ( (za + zb)^2 * std.drv0^2 * (q12)^2 ) / (effect.size^2)
+	n1 <- est.sample.size
 }
 n0 <- n1/n1.n0
 
@@ -76,20 +78,20 @@ p <- ggplot(h.norm, aes(x=x, y=h0)) +
 	geom_line(aes(x=x, y=h0), color="red") +
 	geom_line(aes(x=x, y=h1), color="blue") +
 	geom_vline(xintercept=a.h0) +
-	geom_vline(xintercept=b.h1, linetype="dashed") +
+	geom_vline(xintercept=b.h1, linetype="dashed", show.legend=TRUE) +
 	geom_ribbon(data=subset(h.norm, a.h0 <= x & x <= max(x)), 
 				aes(ymin=0, ymax=h0, fill="H0", alpha=0.5)) +
 	geom_ribbon(data=subset(h.norm, min(x) <= x & x <= a.h0),
 				aes(ymin=0, ymax=h1, fill="H1", alpha=0.5))
 print(p)
 
-power.b <- pnorm(qnorm(a/two.sided, lower.tail=FALSE), mean=mu1, sd=std.err1, lower.tail=FALSE)
+power.b <- pnorm(qnorm(a/two.sided, mean=mu0, sd=std.err0, lower.tail=FALSE), 
+				 mean=mu1, sd=std.err1, lower.tail=FALSE)
+
+cat("suggested sample size :", est.sample.size, "\n")
 
 if (power.b >= (1-b)){
 	cat("Power :", power.b, "- adequate\n")
 } else{
 	cat("Power :", power.b, "- inadequate\n")
 }
-
-
-x.inter <- qnorm(a/two.sided, lower.tail=FALSE)
