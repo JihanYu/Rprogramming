@@ -43,7 +43,7 @@ effect.size <- 0.5
 mu0 <- 0;  std.drv0 <- 1
 mu1 <- mu0 + effect.size;  std.drv1 <- 1
 one.two <- TRUE
-n1 <- 130;  n1.n0 <- 1;  
+n1 <- NULL;  n1.n0 <- 1;  
 two.sided <- 1;  if(one.two == TRUE) two.sided <- 2
 
 za <- qnorm(a/two.sided, lower.tail=FALSE)
