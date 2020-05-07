@@ -40,12 +40,13 @@ library(ggplot2)
 
 a <- 0.05;  b <- 0.2
 effect.size <- 0.5
-mu0 <- 0;  std.drv0 <- 1
-mu1 <- mu0 + effect.size;  std.drv1 <- 1
+mu0 <- 0;  std.drv0 <- 1;  std.drv1 <- 1
 one.two <- TRUE
 n1 <- NULL;  n1.n0 <- 1;  
-two.sided <- 1;  if(one.two == TRUE) two.sided <- 2
+two.sided <- 1;  
 
+mu1 <- mu0 + effect.size;  
+if(one.two == TRUE) two.sided <- 2
 za <- qnorm(a/two.sided, lower.tail=FALSE)
 zb <- qnorm(b, lower.tail=FALSE)
 
