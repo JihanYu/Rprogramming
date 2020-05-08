@@ -1,35 +1,34 @@
 library(shiny)
 
 shinyUI(fluidPage(
-    titlePanel("Statistical power & Sample size calculation"),
+    titlePanel("Sample size calculation - 2 dichotomous groups(t-test)"),
 
     sidebarLayout(
         sidebarPanel(
             h3("Statistical parameters"),
             sliderInput("a", "alpha:", min=0.001, max=0.999, value=0.05),
-            sliderInput("b", "beta:", min=0, max=100, value=20),
+            sliderInput("b", "beta:", min=0, max=1, value=0.2),
             
             h3("Distribution parameters"),
             numericInput("mu0", "Mean of H0: ", value=0),
             numericInput("std.dev0", "Stand dev of H0: ", value=1),
-            numericInput("effect.size", "Effect size: ", value=2), 
             numericInput("std.dev1", "Stand dev of H1: ", value=1),
-            checkboxInput("one.two", "2 sided test", value=TRUE)
+            numericInput("effect.size", "Effect size: ", value=0.5), 
+            numericInput("n1", "sample number(H1): ", value=NULL), 
+            numericInput("n1.n0", "ratio of number(H1/H0): ", value=1), 
+            checkboxInput("one.two", "2 sided test", value=TRUE),
+            submitButton("Submit")
         ),
 
         mainPanel(
-            plotOutput("distPlot")
+            plotOutput("dispPlot"),
+            textOutput("print.1"),
+            textOutput("print.2"),
+            textOutput("print.3"),
+            textOutput("print.4"),
+            verbatimTextOutput("print.5"),
         )
+        
+        
     )
 ))
-
-
-# statistical parameters
-# - a, b
-#
-# distribution
-# - study design
-# - mu0/mu1, stddev0/stddev1
-# - effect size
-
-#numericInput("a", "alpha", 0, min=0, max=1, step=0.01),
