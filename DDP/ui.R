@@ -20,8 +20,8 @@ shinyUI(fluidPage(
         ),
 
         mainPanel(
-            plotOutput("dispPlot"),
-            textOutput("sample.size")
+            textOutput("print.q12.1"),
+            verbatimTextOutput("print.q12.3"),
         )
         
         
