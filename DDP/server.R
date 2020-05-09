@@ -50,9 +50,10 @@ shinyServer(function(input, output) {
                mean=mu1(), sd=std.err1(), lower.tail=FALSE)
     })
     
-    output$print.1 <- renderPrint({ "suggested sample size : " + est.sample.size() })
+    #output$print.1 <- renderPrint({ "suggested sample size : " + est.sample.size() })
     output$print.2 <- renderText({ est.sample.size() })
     output$print.3 <- renderPrint({ input$b })
     output$print.4 <- renderPrint({ q12()  })
     output$print.5 <- renderText({ q12()  })
+    output$print.6 <- renderPrint({ n1.new() })
 })

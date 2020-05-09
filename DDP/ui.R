@@ -14,7 +14,7 @@ shinyUI(fluidPage(
             numericInput("std.dev0", "Stand dev of H0: ", value=1),
             numericInput("std.dev1", "Stand dev of H1: ", value=1),
             numericInput("effect.size", "Effect size: ", value=0.5), 
-            numericInput("n1", "sample number(H1): ", value=NULL), 
+            numericInput("n1", "sample number(H1): - if determined", value=NULL), 
             numericInput("n1.n0", "ratio of number(H1/H0): ", value=1), 
             checkboxInput("one.two", "2 sided test", value=TRUE),
             submitButton("Submit")
@@ -27,6 +27,7 @@ shinyUI(fluidPage(
             textOutput("print.3"),
             textOutput("print.4"),
             verbatimTextOutput("print.5"),
+            verbatimTextOutput("print.6")
         )
         
         

@@ -42,7 +42,7 @@ a <- 0.05;  b <- 0.2
 effect.size <- 0.5
 mu0 <- 0;  std.drv0 <- 1;  std.drv1 <- 1
 one.two <- TRUE
-n1 <- NULL;  n1.n0 <- 1;  
+n1 <- NA;  n1.n0 <- 1;  
 two.sided <- 1;  
 
 mu1 <- mu0 + effect.size;  
