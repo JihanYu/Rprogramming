@@ -1,7 +1,7 @@
 library(shiny);  library(ggplot2)
 
 shinyServer(function(input, output) {
-    m1 <- reactive({ input$mu0 + input$effect.size })
+    mu1 <- reactive({ input$mu0 + input$effect.size })
     two.sided <- reactive({
         if(input$one.two == TRUE){ 2 } else{ 1 }
     })
@@ -26,23 +26,24 @@ shinyServer(function(input, output) {
     std.err1 <- reactive({ input$std.dev1/sqrt(n1.new()/2) })
     
     output$dispPlot <- renderPlot({
-        x <- seq(from = input$mu0-5*std.err0(), to=m1()+5*std.err1(), by=0.01)
+        x <- seq(from = input$mu0-5*std.err0(), to=mu1()+5*std.err1(), by=0.01)
         h0 <- dnorm(x, mean=input$mu0, sd=std.err0())
-        h1 <- dnorm(x, mean=input$mu1(), sd=std.err1())
+        h1 <- dnorm(x, mean=mu1(), sd=std.err1())
         h.norm <- data.frame(x, h0, h1)
         
         a.h0 <- qnorm(input$a/two.sided(), mean=input$mu0, sd=std.err0(), lower.tail=FALSE)
         b.h1 <- qnorm(input$b, mean=mu1(), sd=std.err1())
         
-        ggplot(h.norm, aes(x=x, y=h0)) +
+        p <- ggplot(h.norm, aes(x=x, y=h0)) +
             geom_line(aes(x=x, y=h0), color="red") +
             geom_line(aes(x=x, y=h1), color="blue") +
             geom_vline(xintercept=a.h0) +
             geom_vline(xintercept=b.h1, linetype="dashed") +
-            geom_ribbon(data=subset(h.norm, a.h0 <= x & x <= max(x)),
-                        aes(ymin=0, ymax=h0, fill="H0", alpha=0.5)) +
+            geom_ribbon(data=subset(h.norm, a.h0 <= x & x <= max(x)), 
+                        aes(ymin=0, ymax=h0, fill="H0"), alpha=0.5, legend=FALSE) +
             geom_ribbon(data=subset(h.norm, min(x) <= x & x <= a.h0),
-                        aes(ymin=0, ymax=h1, fill="H1", alpha=0.5))
+                        aes(ymin=0, ymax=h1, fill="H1"), alpha=0.5, legend=FALSE)
+        return(p)
      })
     
     power.b <- reactive({
@@ -50,10 +51,15 @@ shinyServer(function(input, output) {
                mean=mu1(), sd=std.err1(), lower.tail=FALSE)
     })
     
-    #output$print.1 <- renderPrint({ "suggested sample size : " + est.sample.size() })
-    output$print.2 <- renderText({ est.sample.size() })
-    output$print.3 <- renderPrint({ input$b })
-    output$print.4 <- renderPrint({ q12()  })
-    output$print.5 <- renderText({ q12()  })
-    output$print.6 <- renderPrint({ n1.new() })
+    output$print.sample.n <- renderText({ 
+        paste("suggested sample size : ", round(est.sample.size(), 2), "\n")
+    })
+    
+    output$print.power <- renderText({
+        if(power.b() >= (1-input$b)){
+            paste("Power : ", round(power.b(), 2), "-adequate\n")
+        }else{
+            paste("Power : ", round(power.b(), 2), "-inadequate\n")
+        }
+    })
 })

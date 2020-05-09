@@ -1,12 +1,12 @@
 library(shiny)
 
 shinyUI(fluidPage(
-    titlePanel("Sample size calculation - 2 dichotomous groups(t-test)"),
+    titlePanel("Sample size or Power calculation - 2 dichotomous groups(t-test)"),
 
     sidebarLayout(
         sidebarPanel(
             h3("Statistical parameters"),
-            sliderInput("a", "alpha:", min=0.001, max=0.999, value=0.05),
+            sliderInput("a", "alpha:", min=0.001, max=1, value=0.05),
             sliderInput("b", "beta:", min=0, max=1, value=0.2),
             
             h3("Distribution parameters"),
@@ -22,14 +22,8 @@ shinyUI(fluidPage(
 
         mainPanel(
             plotOutput("dispPlot"),
-            textOutput("print.1"),
-            textOutput("print.2"),
-            textOutput("print.3"),
-            textOutput("print.4"),
-            verbatimTextOutput("print.5"),
-            verbatimTextOutput("print.6")
+            verbatimTextOutput("print.sample.n"),
+            verbatimTextOutput("print.power")
         )
-        
-        
     )
 ))

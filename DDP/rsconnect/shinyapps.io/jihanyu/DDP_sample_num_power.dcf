@@ -1,0 +1,12 @@
+name: DDP_sample_num_power
+title: DDP_sample_num_power
+username:
+account: jihanyu
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2270835
+bundleId: 3124012
+url: https://jihanyu.shinyapps.io/DDP_sample_num_power/
+when: 1589022950.34479
+asMultiple: FALSE
+asStatic: FALSE
