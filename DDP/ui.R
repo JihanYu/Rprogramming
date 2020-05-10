@@ -1,7 +1,7 @@
 library(shiny)
 
 shinyUI(fluidPage(
-    titlePanel("Sample size or Power calculation - 2 dichotomous groups(t-test)"),
+    titlePanel("Sample size, Power calculation - 2 dichotomous groups(t-test)"),
 
     sidebarLayout(
         sidebarPanel(
@@ -22,7 +22,8 @@ shinyUI(fluidPage(
 
         mainPanel(
             plotOutput("dispPlot"),
-            verbatimTextOutput("print.sample.n"),
+            verbatimTextOutput("print.cal.sample.n"),
+            verbatimTextOutput("print.prov.sample.n"),
             verbatimTextOutput("print.power")
         )
     )
