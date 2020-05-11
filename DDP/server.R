@@ -24,6 +24,11 @@ shinyServer(function(input, output) {
     
     std.err0 <- reactive({ input$std.dev0/sqrt(n0()/2) })
     std.err1 <- reactive({ input$std.dev1/sqrt(n1.new()/2) })
+
+    power.b <- reactive({
+        pnorm( qnorm(input$a/two.sided(), mean=input$mu0, sd=std.err0(), lower.tail=FALSE),
+               mean=mu1(), sd=std.err1(), lower.tail=FALSE)
+    })
     
     output$dispPlot <- renderPlot({
         x <- seq(from = input$mu0-5*std.err0(), to=mu1()+5*std.err1(), by=0.01)
@@ -46,18 +51,13 @@ shinyServer(function(input, output) {
         return(p)
      })
     
-    power.b <- reactive({
-        pnorm( qnorm(input$a/two.sided(), mean=input$mu0, sd=std.err0(), lower.tail=FALSE),
-               mean=mu1(), sd=std.err1(), lower.tail=FALSE)
-    })
-    
     output$print.cal.sample.n <- renderText({ 
         paste("suggested sample size : ", round(est.sample.size(), 2), "\n")
     })
     
     output$print.prov.sample.n <- renderText({
         if(is.na(input$n1)){
-            paste("Provided sample number: unknown\n", )
+            paste("Provided sample number: unknown\n")
         }else{
             paste("Provided sample number: ", input$n1, "\n")
         }
@@ -65,9 +65,9 @@ shinyServer(function(input, output) {
     
     output$print.power <- renderText({
         if(power.b() >= (1-input$b)){
-            paste("Power with the sample number: ", round(power.b(), 2), "-adequate\n")
+            paste("Power with the sample number: ", round(power.b(), 2), "- adequate\n")
         }else{
-            paste("Power with the sample number: ", round(power.b(), 2), "-inadequate\n")
+            paste("Power with the sample number: ", round(power.b(), 2), "- inadequate\n")
         }
     })
 })

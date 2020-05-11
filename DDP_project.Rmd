@@ -1,10 +1,12 @@
 ---
 title: "Course Project"
 author: "Jihan Yu"
-date: '2020 5 9 '
+date: '2020 5 11 '
 output: ioslides_presentation
 ---
-
+<style>
+pre{ font-size: 13px;}
+</style>
 
 ```{r setup, include=FALSE}
 
@@ -14,23 +16,82 @@ knitr::opts_chunk$set(echo=FALSE, fig.align = "center", message=FALSE, warning=F
 
 ## Sample Size, Power calculation
 
-This shiny app calculates sample size for given alpha & beta
+This shiny app calculates sample size with given alpha and beta or power with provided alpha and sample size.
 
-## Slide with Bullets
+(Some codes were hided due to space limitation.)
 
-- Bullet 1
-- Bullet 2
-- Bullet 3
+Original shiny app : 
+https://jihanyu.shinyapps.io/DDP_sample_num_power/
 
-## Slide with R Output
-
-```{r cars, echo = TRUE}
-summary(cars)
+## ui.R - edited
+```{r ui, echo=TRUE, eval=FALSE}
+    ...
+    sidebarLayout(
+        sidebarPanel(
+            h3("Statistical parameters"),
+            sliderInput("a", "alpha:", min=0.001, max=1, value=0.05),
+            sliderInput("b", "beta:", min=0, max=1, value=0.2),
+            h3("Distribution parameters"),
+            numericInput("mu0", "Mean of H0: ", value=0),
+            numericInput("std.dev0", "Stand dev of H0: ", value=1),
+            numericInput("std.dev1", "Stand dev of H1: ", value=1),
+            numericInput("effect.size", "Effect size: ", value=0.5), 
+            numericInput("n1", "sample number(H1): - if determined", value=NULL), 
+            numericInput("n1.n0", "ratio of number(H1/H0): ", value=1), 
+            checkboxInput("one.two", "2 sided test", value=TRUE),
+            submitButton("Submit")
+        ),
+        mainPanel(
+            plotOutput("dispPlot"), verbatimTextOutput("print.cal.sample.n"),
+            verbatimTextOutput("print.prov.sample.n"), verbatimTextOutput("print.power")        )
+    )
 ```
 
-## Slide with Plot
+## server.R(1) - edited
+```{r server 1, echo=TRUE, eval=FALSE}
+shinyServer(function(input, output) {
+    ...
+    two.sided <- reactive({
+        if(input$one.two == TRUE){ 2 } else{ 1 }
+    })
+    q12 <- reactive({
+        if(input$n1.n0 >= 1){ 1 + 1/input$n1.n0 } else{ 1 + input$n1.n0 }
+    })
+    est.sample.size <- reactive({
+        ( (za() + zb())^2 * input$std.dev0^2 * q12() ) / (input$effect.size^2)
+    })
 
-```{r pressure}
-plot(pressure)
+    n1.new <- reactive({
+        if(is.na(input$n1)){ est.sample.size() } else{ input$n1 }
+    })
+    n0 <- reactive({ n1.new()/input$n1.n0 })
+    
+    power.b <- reactive({
+        pnorm( qnorm(input$a/two.sided(), mean=input$mu0, sd=std.err0(), lower.tail=FALSE),
+               mean=mu1(), sd=std.err1(), lower.tail=FALSE)
+    })
+    ...
 ```
 
+## server.R(2) - edited
+```{r server 2, echo = TRUE, eval=FALSE}
+shinyServer(function(input, output) {
+  ...
+  output$dispPlot <- renderPlot({
+        x <- seq(from = input$mu0-5*std.err0(), to=mu1()+5*std.err1(), by=0.01)
+        h0 <- dnorm(x, mean=input$mu0, sd=std.err0())
+        h1 <- dnorm(x, mean=mu1(), sd=std.err1())
+        h.norm <- data.frame(x, h0, h1)
+        a.h0 <- qnorm(input$a/two.sided(), mean=input$mu0, sd=std.err0(), lower.tail=FALSE)
+        b.h1 <- qnorm(input$b, mean=mu1(), sd=std.err1())
+        p <- ggplot(h.norm, aes(x=x, y=h0)) +
+            geom_line(aes(x=x, y=h0), color="red") + geom_line(aes(x=x, y=h1), color="blue") +
+            geom_vline(xintercept=a.h0) + geom_vline(xintercept=b.h1, linetype="dashed") +
+            geom_ribbon(data=subset(h.norm, a.h0 <= x & x <= max(x)), 
+                        aes(ymin=0, ymax=h0, fill="H0"), alpha=0.5, legend=FALSE) +
+            geom_ribbon(data=subset(h.norm, min(x) <= x & x <= a.h0),
+                        aes(ymin=0, ymax=h1, fill="H1"), alpha=0.5, legend=FALSE)
+        return(p)
+     })
+  ...    
+```
