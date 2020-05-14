@@ -19,6 +19,7 @@ pollutantmean <- function(directory, pollutant, id=1:332){
     mean.pol <- vector()
     for(file.id in csv.list){
         file.path <- paste(directory, "\\", file.id, sep="")
+        print(file.path)
         current.file <- read.csv(file.path, header=TRUE)
         mean.pol <- c(mean.pol, mean(current.file[pollutant][,1], na.rm=TRUE))
     }
