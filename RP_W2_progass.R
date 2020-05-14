@@ -16,15 +16,14 @@ pollutantmean <- function(directory, pollutant, id=1:332){
         return(file.name)
     }
     csv.list <- sapply(id, make.filename)
-    mean.pol <- vector()
+    sum.pol <- 0; n.pol <- 0
     for(file.id in csv.list){
         file.path <- paste(directory, "\\", file.id, sep="")
-        print(file.path)
         current.file <- read.csv(file.path, header=TRUE)
-        mean.pol <- c(mean.pol, mean(current.file[pollutant][,1], na.rm=TRUE))
+        sum.pol <- sum.pol + sum(current.file[pollutant][,1], na.rm=TRUE)
+        n.pol <- n.pol + sum(!is.na(current.file[pollutant]))
     }
-    names(mean.pol) <- id
-    return(mean.pol)
+    return(sum.pol/n.pol)
 }
 
 pollutantmean("specdata", "sulfate")
