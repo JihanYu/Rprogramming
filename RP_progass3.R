@@ -1,5 +1,5 @@
-# workingpath <- "C:\\Users\\pc\\Desktop\\Jihan"
-workingpath <- "C:\\Users\\MED1\\Desktop\\Coursera\\project\\Rprogramming"
+workingpath <- "C:\\Users\\pc\\Desktop\\Jihan\\Rprogramming"
+#workingpath <- "C:\\Users\\MED1\\Desktop\\Coursera\\project\\Rprogramming"
 setwd(workingpath)
 
 read.outcome <- function(filename){
@@ -37,7 +37,9 @@ best <- function(state, outcome) {
 	disease.id <- which(disease==outcome) + 2
 	outcome.state <- outcome.data[outcome.data$State==state,]
 	min.id <- which( outcome.state[,disease.id] == min(outcome.state[,disease.id], na.rm=TRUE) )
-	return(outcome.state$Hospital.Name[min.id])
+	best.hosp <- sort(outcome.state$Hospital.Name[min.id])[1]
+	
+	return(best.hosp)
 }
 
 source("best.R")
@@ -72,17 +74,29 @@ rankhospital <- function(state, outcome, num = "best") {
 	if(!(state %in% state.name)){ stop("invalid state") }
 	if(!(outcome %in% disease)){ stop("invalid outcome") }
 	
-	
-
 	## Return hospital name in that state with the given rank 30-day death rate
+	disease.id <- which(disease==outcome) + 2
+	outcome.state <- outcome.data[outcome.data$State==state,]
 	
+	n.hosp.state <- nrow(outcome.state)
+	if(num > n.hosp.state){ 
+	  return(NA)
+	}else if(num == "best"){
+	  num <- 1
+	}else if(num == "worst"){
+	  num <- n.hosp.state
+	}
+	
+	outcome.rank <- outcome.state[order(outcome.state[, disease.id]),]
+	rank.hosp <- outcome.rank$Hospital.Name[num]
+
+	return(rank.hosp)
 }
 
 source("rankhospital.R")
 rankhospital("TX", "heart failure", 4)
 # [1] "DETAR HOSPITAL NAVARRO"
 rankhospital("MD", "heart attack", "worst")
-3
-[1] "HARFORD MEMORIAL HOSPITAL"
-> rankhospital("MN", "heart attack", 5000)
-[1] NA
+#[1] "HARFORD MEMORIAL HOSPITAL"
+rankhospital("MN", "heart attack", 5000)
+#[1] NA
