@@ -1,5 +1,5 @@
-#workingpath <- "C:\\Users\\pc\\Desktop\\Jihan\\Rprogramming"
-workingpath <- "C:\\Users\\MED1\\Desktop\\Coursera\\project\\Rprogramming"
+workingpath <- "C:\\Users\\pc\\Desktop\\Jihan\\Rprogramming"
+#workingpath <- "C:\\Users\\MED1\\Desktop\\Coursera\\project\\Rprogramming"
 setwd(workingpath)
 
 read.outcome <- function(filename){
@@ -126,32 +126,25 @@ rankall <- function(outcome, num = "best") {
   
   hospital <- vector()
   for(state.i in state.name){
-	outcome.state <- outcome.data[outcome.data$State==state.i,]
+	  outcome.state <- outcome.data[outcome.data$State==state.i,]
+	  num.new <- num
 	
-	n.hosp.state <- nrow(outcome.state)
-	n.state.na <- sum(is.na(outcome.state[, disease.id]))
-	
-	if(num == "best"){
-		num <- 1
-	}else if(num == "worst"){
-		num <- n.hosp.state - n.state.na
-	}
-	if(is.numeric(num)){
-		if(num > n.hosp.state){
-			hospital <- c(hospital, NA)
-			next
-		}
-	
-	}else{
-		stop("invalide number")
-	}
-
-	outcome.rank <- outcome.state[order(outcome.state[, disease.id], outcome.state[, 1]),]
-	rank.hosp <- outcome.rank$Hospital.Name[num]
-
-	hospital <- c(hospital, rankhospital(state.i, outcome, num))
-  }
-  
+	  n.hosp.state <- nrow(outcome.state)
+	  n.state.na <- sum(is.na(outcome.state[, disease.id]))
+	  if(num == "best"){
+		  num.new <- 1
+	  }else if(num == "worst"){
+		  num.new <- n.hosp.state - n.state.na
+	  }
+	  if(num.new > n.hosp.state){
+	    hospital <- c(hospital, NA)
+	  }else{
+	    outcome.rank <- outcome.state[order(outcome.state[, disease.id],
+	                                        outcome.state[,1]),]
+	    hospital <- c(hospital, outcome.rank$Hospital.Name[num.new])
+	  }
+  }  
+	  
   rank.hosp.df <- data.frame(hospital, state = state.name)
   return(rank.hosp.df)
 }
