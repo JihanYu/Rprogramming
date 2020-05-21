@@ -181,3 +181,46 @@ tail(rankall("heart failure"), 10)
 #WI AURORA ST LUKES MEDICAL CENTER WI
 #WV FAIRMONT GENERAL HOSPITAL WV
 #WY CHEYENNE VA MEDICAL CENTER WY
+
+##### Problem 1 #####
+best("SC", "heart attack")
+# [1] "MUSC MEDICAL CENTER"
+
+##### Problem 2 #####
+best("NY", "pneumonia")
+# [1] "MAIMONIDES MEDICAL CENTER"
+
+##### Problem 3 #####
+best("AK", "pneumonia")
+# [1] "YUKON KUSKOKWIM DELTA REG HOSPITAL"
+
+##### Problem 4 #####
+rankhospital("NC", "heart attack", "worst")
+# [1] "WAYNE MEMORIAL HOSPITAL"
+
+##### Problem 5 #####
+rankhospital("WA", "heart attack", 7)
+# [1] "YAKIMA VALLEY MEMORIAL HOSPITAL"
+
+##### Problem 6 #####
+rankhospital("TX", "pneumonia", 10)
+# [1] "SETON SMITHVILLE REGIONAL HOSPITAL"
+
+##### Problem 7 #####
+rankhospital("NY", "heart attack", 7)
+# [1] "BELLEVUE HOSPITAL CENTER"
+
+##### Problem 8 #####
+r <- rankall("heart attack", 4)
+as.character(subset(r, state == "HI")$hospital)
+# [1] "CASTLE MEDICAL CENTER"
+
+##### Problem 9 #####
+r <- rankall("pneumonia", "worst")
+as.character(subset(r, state == "NJ")$hospital)
+# [1] "BERGEN REGIONAL MEDICAL CENTER"
+
+##### Problem 10 #####
+r <- rankall("heart failure", 10)
+as.character(subset(r, state == "NV")$hospital)
+# [1] "RENOWN SOUTH MEADOWS MEDICAL CENTER"
